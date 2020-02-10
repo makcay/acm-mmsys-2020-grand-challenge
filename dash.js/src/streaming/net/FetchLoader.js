@@ -159,6 +159,8 @@ function FetchLoader(cfg) {
                         bytes: value.length
                     });
 
+                    parseMoofData(remaining.buffer,requestStartTime.getTime(),downLoadedData[downLoadedData.length-1].ts)
+
                     const boxesInfo = boxParser.findLastTopIsoBoxCompleted(['moov', 'mdat'], remaining, offset);
                     if (boxesInfo.found) {
                         const end = boxesInfo.lastCompletedOffset + boxesInfo.size;
@@ -209,6 +211,18 @@ function FetchLoader(cfg) {
                 httpRequest.onerror(e);
             }
         });
+    }
+
+    function parseMoofData(buffer,chunkStartTime,chunkEndTime){
+        try {
+            let isoFile=boxParser.parse(buffer)
+            let tfdtBox=isoFile.getBox("tfdt")  
+            let baseMediaDecodeTime=tfdtBox.baseMediaDecodeTime 
+            //let chunkStartTime=baseMediaDecodeTime;
+            console.log("chunkEndTime="+chunkEndTime+" chunkStartTime="+chunkStartTime+" duration="+(chunkEndTime-chunkStartTime)+" chunkSize="+buffer.length);
+        } catch (error) {
+            console.log(error)
+        }
     }
 
     function read(httpRequest, processResult) {
