@@ -31,6 +31,9 @@
 
 import FactoryMaker from '../../core/FactoryMaker';
 
+let previousChunkStartTime=null;
+let previousBaseMediaDecodeTime=0;
+
 /**
 * @module FetchLoader
 * @ignore
@@ -213,13 +216,20 @@ function FetchLoader(cfg) {
         });
     }
 
-    function parseMoofData(buffer,chunkStartTime,chunkEndTime){
+    function parseMoofData(buffer,requestStartTime,chunkEndTime){
         try {
-            let isoFile=boxParser.parse(buffer)
-            let tfdtBox=isoFile.getBox("tfdt")  
-            let baseMediaDecodeTime=tfdtBox.baseMediaDecodeTime 
-            //let chunkStartTime=baseMediaDecodeTime;
-            console.log("chunkEndTime="+chunkEndTime+" chunkStartTime="+chunkStartTime+" duration="+(chunkEndTime-chunkStartTime)+" chunkSize="+buffer.length);
+            let chunkStartTime=requestStartTime;
+            if (previousChunkStartTime){
+                chunkStartTime=previousChunkStartTime;
+                let isoFile=boxParser.parse(buffer);
+                let tfdtBox=isoFile.getBox("tfdt");
+                let moofBox=isoFile.getBox("moof");
+                let baseMediaDecodeTime=tfdtBox.baseMediaDecodeTime;
+                chunkStartTime=chunkStartTime+baseMediaDecodeTime-previousBaseMediaDecodeTime;
+                previousBaseMediaDecodeTime=baseMediaDecodeTime;
+            }
+            previousChunkStartTime = chunkStartTime
+            console.log("chunkEndTime="+chunkEndTime+" chunkStartTime="+chunkStartTime+" duration="+(chunkEndTime-chunkStartTime)+" chunkSize="+buffer.byteLength);
         } catch (error) {
             console.log(error)
         }
