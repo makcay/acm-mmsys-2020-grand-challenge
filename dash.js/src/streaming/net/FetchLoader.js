@@ -31,7 +31,6 @@
 
 import FactoryMaker from '../../core/FactoryMaker';
 
-let previousChunkStartTime=null;
 let previousBaseMediaDecodeTime=0;
 
 /**
@@ -134,6 +133,7 @@ function FetchLoader(cfg) {
             let downLoadedData = [];
 
             const processResult = function ({ value, done }) {
+                let firstChunkDate=requestStartTime;
                 if (done) {
                     if (remaining) {
                         // If there is pending data, call progress so network metrics
@@ -162,7 +162,7 @@ function FetchLoader(cfg) {
                         bytes: value.length
                     });
 
-                    parseMoofData(remaining.buffer,requestStartTime.getTime(),downLoadedData[downLoadedData.length-1].ts)
+                    logMoofData(remaining.buffer,httpRequest)
 
                     const boxesInfo = boxParser.findLastTopIsoBoxCompleted(['moov', 'mdat'], remaining, offset);
                     if (boxesInfo.found) {
@@ -216,20 +216,24 @@ function FetchLoader(cfg) {
         });
     }
 
-    function parseMoofData(buffer,requestStartTime,chunkEndTime){
+    function logMoofData(buffer, httpRequest){
         try {
-            let chunkStartTime=requestStartTime;
-            if (previousChunkStartTime){
-                chunkStartTime=previousChunkStartTime;
-                let isoFile=boxParser.parse(buffer);
-                let tfdtBox=isoFile.getBox("tfdt");
-                let moofBox=isoFile.getBox("moof");
+            let isoFile=boxParser.parse(buffer);
+            let tfdtBox=isoFile.getBox("tfdt");
+            //let moofBox=isoFile.getBox("moof");
+            if (tfdtBox){
                 let baseMediaDecodeTime=tfdtBox.baseMediaDecodeTime;
-                chunkStartTime=chunkStartTime+baseMediaDecodeTime-previousBaseMediaDecodeTime;
+                let difference=baseMediaDecodeTime-previousBaseMediaDecodeTime;
+                let ratio=difference/buffer.byteLength
+                if (previousBaseMediaDecodeTime>0 && difference>0){
+                    console.log(//'ratio=',ratio.toFixed(6),
+                                'difference in base media decodetime=',baseMediaDecodeTime-previousBaseMediaDecodeTime,
+                                'size=',buffer.byteLength,
+                                'url=',httpRequest.response.responseURL)    
+                }
                 previousBaseMediaDecodeTime=baseMediaDecodeTime;
             }
-            previousChunkStartTime = chunkStartTime
-            console.log("chunkEndTime="+chunkEndTime+" chunkStartTime="+chunkStartTime+" duration="+(chunkEndTime-chunkStartTime)+" chunkSize="+buffer.byteLength);
+            //console.log("chunkEndTime="+chunkEndTime+" chunkRequestTime="+chunkRequestTime+" duration="+(chunkEndTime-chunkRequestTime)+" chunkSize="+totalSize+" parts="+parts);
         } catch (error) {
             console.log(error)
         }
