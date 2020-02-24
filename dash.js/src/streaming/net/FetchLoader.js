@@ -227,7 +227,7 @@ function FetchLoader(cfg) {
                 let ratio=difference/buffer.byteLength
                 if (previousBaseMediaDecodeTime>0 && difference>0){
                     console.log(//'ratio=',ratio.toFixed(6),
-                                'difference in base media decodetime=',baseMediaDecodeTime-previousBaseMediaDecodeTime,
+                                'difference in base media decodetime=',difference,
                                 'size=',buffer.byteLength,
                                 'url=',httpRequest.response.responseURL)    
                 }
