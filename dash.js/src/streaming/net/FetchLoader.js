@@ -133,7 +133,6 @@ function FetchLoader(cfg) {
             let downLoadedData = [];
 
             const processResult = function ({ value, done }) {
-                let firstChunkDate=requestStartTime;
                 if (done) {
                     if (remaining) {
                         // If there is pending data, call progress so network metrics
@@ -219,19 +218,21 @@ function FetchLoader(cfg) {
     function logMoofData(buffer, httpRequest){
         try {
             let isoFile=boxParser.parse(buffer);
-            let tfdtBox=isoFile.getBox("tfdt");
-            //let moofBox=isoFile.getBox("moof");
-            if (tfdtBox){
-                let baseMediaDecodeTime=tfdtBox.baseMediaDecodeTime;
-                let difference=baseMediaDecodeTime-previousBaseMediaDecodeTime;
-                let ratio=difference/buffer.byteLength
-                if (previousBaseMediaDecodeTime>0 && difference>0){
-                    console.log(//'ratio=',ratio.toFixed(6),
-                                'difference in base media decodetime=',difference,
-                                'size=',buffer.byteLength,
-                                'url=',httpRequest.response.responseURL)    
+            let boxes=isoFile.getBoxes("tfdt");
+            if (boxes){
+                for (let i = 0; i < boxes.length; i++) {
+                    let tfdtBox=boxes[i];
+                    let baseMediaDecodeTime=tfdtBox.baseMediaDecodeTime;
+                    let difference=baseMediaDecodeTime-previousBaseMediaDecodeTime;
+                    let ratio=difference/buffer.byteLength
+                    if (previousBaseMediaDecodeTime>0 && difference>0){
+                        console.log(//'ratio=',ratio.toFixed(6),
+                                    'difference in base media decodetime=',difference,
+                                    'baseMediaDecodeTime=',baseMediaDecodeTime,
+                                    'url=',httpRequest.response.responseURL)    
+                    }
+                    previousBaseMediaDecodeTime=baseMediaDecodeTime;
                 }
-                previousBaseMediaDecodeTime=baseMediaDecodeTime;
             }
             //console.log("chunkEndTime="+chunkEndTime+" chunkRequestTime="+chunkRequestTime+" duration="+(chunkEndTime-chunkRequestTime)+" chunkSize="+totalSize+" parts="+parts);
         } catch (error) {
