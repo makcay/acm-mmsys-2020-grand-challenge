@@ -29,14 +29,14 @@ fi
 echo ${FF} -h all | grep ldash
 
 ${FF} \
--re -f x11grab -r 30 -i ":0.0" \
+-re -f x11grab -i ":0.0" \
 -c:v ${VCODEC} \
--b:v:0 500K -b:v:1 200K -s:v:0 960x400 -s:v:1 720x300 \
+-b:v:0 200K -b:v:1 1000K -s:v:0 640x360 -s:v:1 1280x720 \
 -map 0:v:0 -map 0:v:0 \
 -use_timeline 0 \
 -use_template 1 \
 -frag_type every_frame \
--adaptation_sets "id=0,seg_duration=0.5,streams=0,1" \
+-adaptation_sets "id=0,seg_duration=10,streams=0,1" \
 -g:v 15 -keyint_min:v 15 -sc_threshold:v 0 -streaming 1 -ldash 1 -tune zerolatency \
 -color_primaries ${COLOR} -color_trc ${COLOR} -colorspace ${COLOR} \
 -f dash \

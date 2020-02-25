@@ -41,13 +41,14 @@ then
 elif [ "$PROFILE" == "PROFILE_SLOW" ]
 then
     LADDER_PROFILE=$PROFILE_SLOW
-    echo "Using normal ffmpeg profile source limited (360p@200K, 480p@600K, 720p@1000K)"
+    echo "Using slow ffmpeg profile source limited (360p@200K, 480p@600K, 720p@1000K)"
 else
     LADDER_PROFILE=$PROFILE_NORMAL
     echo "Using normal ffmpeg profile (360p@200K, 480p@600K, 720p@1000K)"
 fi
 
-${FF} -hide_banner -loglevel panic \
+#${FF} -hide_banner -loglevel panic \
+${FF} -hide_banner \
 -re -i bbb.mp4 \
 -c:v ${VCODEC} \
 ${LADDER_PROFILE} \
